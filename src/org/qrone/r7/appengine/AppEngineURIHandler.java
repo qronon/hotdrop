@@ -10,7 +10,6 @@ import org.qrone.r7.handler.ExtendableURIHandler;
 import org.qrone.r7.handler.HTML5Handler;
 import org.qrone.r7.handler.PathFinderHandler;
 import org.qrone.r7.handler.ResolverHandler;
-import org.qrone.r7.resolver.MemoryResolver;
 import org.qrone.r7.resolver.URIResolver;
 
 import com.google.appengine.api.datastore.DatastoreService;
