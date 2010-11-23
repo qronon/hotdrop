@@ -2,6 +2,7 @@ package org.qrone.r7.appengine;
 
 import javax.servlet.ServletContext;
 
+import org.qrone.png.PNGMemoryImageService;
 import org.qrone.r7.ExtensionIndex;
 import org.qrone.r7.fetcher.URLFetcher;
 import org.qrone.r7.github.GitHubResolver;
@@ -37,12 +38,12 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 		setupResolver();
 
 		HTML5Handler html5handler = new HTML5Handler(
-				resolver, new AppEngineImageBufferService(),new AppEngineLoginService());
+				resolver, new PNGMemoryImageService(),new AppEngineLoginService());
 		ExtensionIndex ei = new ExtensionIndex();
-		if(ei.unpack(resolver) == null){
+		//if(ei.unpack(resolver) == null){
 			ei.find(cx);
-			ei.pack(resolver);
-		}
+		//	ei.pack(resolver);
+		//}
 		ei.extend(html5handler);
 		ei.extend(this);
 

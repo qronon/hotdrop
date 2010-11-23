@@ -55,6 +55,7 @@ public class GitHubResolver implements URIResolver, URIHandler {
 	@Override
 	public boolean exist(String path) {
 		getFiles();
+		if(cacheresolver.exist(path)) return true;
 		return blobs.containsKey(path.substring(1));
 	}
 

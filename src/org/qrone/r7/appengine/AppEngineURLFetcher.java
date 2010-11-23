@@ -17,17 +17,21 @@ public class AppEngineURLFetcher implements URLFetcher{
 	
 	@Override
 	public InputStream fetch(String url) throws IOException{
+		System.out.println("Fetch " + url);
 		byte[] bytes = service.fetch(new URL(url)).getContent();
-		System.err.println(new String(bytes));
+		//System.err.println(new String(bytes));
+		System.out.println("Finished.");
 		return new ByteArrayInputStream(bytes);
 	}
 
 	@Override
 	public InputStream fetch(String url, byte[] body) throws IOException{
+		System.out.println("Fetch " + url);
 		HTTPRequest r = new HTTPRequest(new URL(url));
 		r.setPayload(body);
 		byte[] bytes = service.fetch(r).getContent();
-		System.err.println(new String(bytes));
+		//System.err.println(new String(bytes));
+		System.out.println("Finished.");
 		return new ByteArrayInputStream(bytes);
 	}
 }
