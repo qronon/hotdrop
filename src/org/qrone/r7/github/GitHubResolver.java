@@ -43,9 +43,11 @@ public class GitHubResolver implements URIResolver, URIHandler {
 	
 	private Map<String,String> getFiles(){
 		if(blobs == null){
-			Map map = (Map)Yaml.load(fetcher.fetch("http://github.com/api/v2/yaml/blob/all/" 
-					+ user + "/" + repo + "/" + treesha));
-			blobs = (Map<String,String>)map.get("blobs");
+			try {
+				Map map = (Map)Yaml.load(fetcher.fetch("http://github.com/api/v2/yaml/blob/all/" 
+						+ user + "/" + repo + "/" + treesha));
+				blobs = (Map<String,String>)map.get("blobs");
+			} catch (IOException e) {}
 		}
 		return blobs;
 	}
