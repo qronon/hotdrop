@@ -10,6 +10,7 @@ import org.qrone.util.QrONEUtils;
 
 import com.google.appengine.api.images.ImagesServiceFactory;
 
+@Deprecated
 public class AppEngineImageBufferService implements ImageBufferService{
 
 	@Override

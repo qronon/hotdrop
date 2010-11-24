@@ -13,6 +13,7 @@ import com.google.appengine.api.images.Image;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.Transform;
 
+@Deprecated
 public class AppEngineImageBuffer implements ImageBuffer{
 	private Image image;
 	private int width;
