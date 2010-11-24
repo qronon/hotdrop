@@ -12,30 +12,21 @@ import org.qrone.r7.handler.HTML5Handler;
 import org.qrone.r7.handler.PathFinderHandler;
 import org.qrone.r7.handler.ResolverHandler;
 import org.qrone.r7.resolver.URIResolver;
-
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
  
 public class AppEngineURIHandler extends ExtendableURIHandler{
-	private static final String KIND = "qrone.repository";
-	private static final String NAME = "name";
-	private static final String REPO = "repo";
-	private static final String TAG = "sha";
 	
-	private DatastoreService service = DatastoreServiceFactory.getDatastoreService();
 	private URLFetcher fetcher = new AppEngineURLFetcher();
 	private URIResolver cache  = new AppEngineResolver();
 	private GitHubResolver github = new GitHubResolver(fetcher, cache, 
 			"qronon","qronesite","master");
+	private AppEngineRepositoryService repository = new AppEngineRepositoryService(fetcher, cache);
 	
 	public AppEngineURIHandler(ServletContext cx) {
 		//resolver.add(new FilteredResolver("/qrone-server/", new InternalResourceResolver()));
 		//resolver.add(new ServletResolver(cx));
 		
-		setupResolver();
+		resolver.add(github);
+		resolver.add(repository.getResolver());
 
 		HTML5Handler html5handler = new HTML5Handler(
 				new PortingServiceBase(
@@ -44,7 +35,9 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 						new AppEngineKVSService(), 
 						new AppEngineMemcachedService(), 
 						new AppEngineLoginService(), 
-						new PNGMemoryImageService()));
+						new PNGMemoryImageService(),
+						repository
+				));
 		ExtensionIndex ei = new ExtensionIndex();
 		//if(ei.unpack(resolver) == null){
 			ei.find(cx);
@@ -59,16 +52,6 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	}
 	
 	private void setupResolver(){
-		Query query = new Query(KIND);
-		PreparedQuery pq = service.prepare(query);
-		resolver.asList().clear();
-		
-		resolver.add(github);
-		for( Entity e : pq.asIterable()){
-			github = new GitHubResolver(fetcher, cache, 
-					(String)e.getProperty(NAME), (String)e.getProperty(REPO), (String)e.getProperty(TAG));
-			resolver.add(github);
-		}
 		
 	}
 	
