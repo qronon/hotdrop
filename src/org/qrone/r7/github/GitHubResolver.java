@@ -1,25 +1,32 @@
 package org.qrone.r7.github;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.arnx.jsonic.JSON;
+
 import org.ho.yaml.Yaml;
+import org.qrone.r7.appengine.AppEngineURLFetcher;
 import org.qrone.r7.fetcher.URLFetcher;
 import org.qrone.r7.handler.URIHandler;
 import org.qrone.r7.resolver.URIResolver;
 import org.qrone.util.QrONEUtils;
 
 public class GitHubResolver implements URIResolver, URIHandler {
+	private static final Logger log = Logger.getLogger(GitHubResolver.class.getName());
 	private URLFetcher fetcher;
 	private URIResolver cacheresolver;
 	private String user;
@@ -71,9 +78,18 @@ public class GitHubResolver implements URIResolver, URIHandler {
 		
 		updatedSet.remove(uri.toString());
 		String sha = getFiles().get(uri.toString().substring(1));
-		if(sha != null)
-			return fetcher.fetch("http://github.com/api/v2/yaml/blob/show/" 
+		if(sha != null){
+			InputStream fin =  fetcher.fetch("http://github.com/api/v2/yaml/blob/show/" 
 					+ user + "/" + repo + "/" + sha);
+			byte[] bytes = QrONEUtils.read(fin);
+			
+			OutputStream out = cacheresolver.getOutputStream(uri);
+			out.write(bytes);
+			out.flush();
+			out.close();
+			
+			return new ByteArrayInputStream(bytes);
+		}
 		return null;
 	}
 
@@ -88,21 +104,46 @@ public class GitHubResolver implements URIResolver, URIHandler {
 			HttpServletResponse response, String path, String pathArg) {
 		if(path.equals("/qrone-server/github-post-receive")){
 			try {
-				
-				Map<String,String> oldblobs = blobs;
+				log.config("Github post-receive hooks.");
 				blobs = null;
-				getFiles();
+				Map map = (Map)JSON.decode(request.getParameter("payload"));
+				List<Map> list = (List)map.get("commits");
 				
-				for (Entry<String,String> e : oldblobs.entrySet()) {
-					String sha = blobs.get(e.getKey());
-					if(sha == null || !sha.equals(e.getValue())){
+				for (Map m : list) {
+					List<String> removed = (List)m.get("removed");
+					for (String p : removed) {
 						try {
-							cacheresolver.remove(new URI("/" + e.getKey()));
-						} catch (URISyntaxException e1) {}
-					}else{
-						updatedSet.add(e.getKey());
+							log.config("removed: /" + p);
+							cacheresolver.remove(new URI("/" + p));
+							updatedSet.add("/" + p);
+						} catch (URISyntaxException e) {}
+					}
+					List<String> modified = (List)m.get("modified");
+					for (String p : modified) {
+						try {
+							log.config("modified: /" + p);
+							cacheresolver.remove(new URI("/" + p));
+							updatedSet.add("/" + p);
+						} catch (URISyntaxException e) {}
 					}
 				}
+				
+				/*
+				Map<String,String> oldblobs = blobs;
+				getFiles();
+				
+				if(oldblobs != null){
+					for (Entry<String,String> e : oldblobs.entrySet()) {
+						String sha = blobs.get(e.getKey());
+						if(sha == null || !sha.equals(e.getValue())){
+							try {
+								cacheresolver.remove(new URI("/" + e.getKey()));
+								updatedSet.add("/" + e.getKey());
+							} catch (URISyntaxException e1) {}
+						}
+					}
+				}
+				*/
 				
 				/*
 				
