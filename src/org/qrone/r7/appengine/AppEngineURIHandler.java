@@ -18,7 +18,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	private URLFetcher fetcher = new AppEngineURLFetcher();
 	private URIResolver cache  = new AppEngineResolver();
 	private GitHubResolver github = new GitHubResolver(fetcher, cache, 
-			"qronon","qronesite","master");
+			"qronon","qrone-admintool","master");
 	private AppEngineRepositoryService repository = new AppEngineRepositoryService(fetcher, cache);
 	
 	public AppEngineURIHandler(ServletContext cx) {

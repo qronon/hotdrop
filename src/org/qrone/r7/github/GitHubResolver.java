@@ -97,7 +97,7 @@ public class GitHubResolver implements URIResolver, URIHandler {
 					String sha = blobs.get(e.getKey());
 					if(sha == null || !sha.equals(e.getValue())){
 						try {
-							cacheresolver.remove(new URI(e.getKey()));
+							cacheresolver.remove(new URI("/" + e.getKey()));
 						} catch (URISyntaxException e1) {}
 					}else{
 						updatedSet.add(e.getKey());
