@@ -3,6 +3,7 @@ package org.qrone.r7.appengine;
 import javax.servlet.ServletContext;
 
 import org.qrone.png.PNGMemoryImageService;
+import org.qrone.r7.Extendable;
 import org.qrone.r7.ExtensionIndex;
 import org.qrone.r7.PortingServiceBase;
 import org.qrone.r7.fetcher.URLFetcher;
@@ -12,6 +13,11 @@ import org.qrone.r7.handler.HTML5Handler;
 import org.qrone.r7.handler.PathFinderHandler;
 import org.qrone.r7.handler.ResolverHandler;
 import org.qrone.r7.resolver.URIResolver;
+import org.qrone.r7.script.ext.ClassPrototype;
+import org.qrone.r7.script.ext.ListWrapper;
+import org.qrone.r7.script.ext.MapWrapper;
+import org.qrone.r7.tag.ImageHandler;
+import org.qrone.r7.tag.Scale9Handler;
  
 public class AppEngineURIHandler extends ExtendableURIHandler{
 	
@@ -38,21 +44,21 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 						new PNGMemoryImageService(),
 						repository
 				));
-		ExtensionIndex ei = new ExtensionIndex();
-		//if(ei.unpack(resolver) == null){
-			ei.find(cx);
-		//	ei.pack(resolver);
-		//}
-		ei.extend(html5handler);
-		ei.extend(this);
+		
+		rawextend(html5handler);
+		rawextend(this);
 
 		handler.add(github);
 		handler.add(new PathFinderHandler(html5handler));
 		handler.add(new ResolverHandler(resolver));
 	}
 	
-	private void setupResolver(){
-		
+	private void rawextend(Extendable e){
+		e.addExtension(ClassPrototype.class);
+		e.addExtension(ListWrapper.class);
+		e.addExtension(MapWrapper.class);
+		e.addExtension(ImageHandler.class);
+		e.addExtension(Scale9Handler.class);
 	}
 	
 }
