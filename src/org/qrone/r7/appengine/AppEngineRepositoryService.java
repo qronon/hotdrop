@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.qrone.kvs.KVSService;
+import org.qrone.database.DatabaseService;
 import org.qrone.r7.RepositoryService;
 import org.qrone.r7.fetcher.URLFetcher;
 import org.qrone.r7.github.GitHubResolver;

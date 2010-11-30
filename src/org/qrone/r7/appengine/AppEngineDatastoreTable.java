@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mozilla.javascript.Scriptable;
-import org.qrone.kvs.KVSCursor;
-import org.qrone.kvs.KVSTable;
+import org.qrone.database.DatabaseCursor;
+import org.qrone.database.DatabaseTable;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
@@ -13,26 +13,26 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 
-public class AppEngineKVSTable implements KVSTable{
+public class AppEngineDatastoreTable implements DatabaseTable{
 	private DatastoreService db;
 	private String collection;
 	
-	public AppEngineKVSTable(DatastoreService db, String collection) {
+	public AppEngineDatastoreTable(DatastoreService db, String collection) {
 		this.collection = collection;
 	}
 
 	@Override
-	public KVSCursor find() {
-		return new AppEngineKVSCursor(db, new Query(collection), null);
+	public DatabaseCursor find() {
+		return new AppEngineDatastoreCursor(db, new Query(collection), null);
 	}
 	
 	@Override
-	public KVSCursor find(Scriptable o){
+	public DatabaseCursor find(Scriptable o){
 		return find(o, null);
 	}
 	
 	@Override
-	public KVSCursor find(Scriptable o, Scriptable p) {
+	public DatabaseCursor find(Scriptable o, Scriptable p) {
 		Query q = new Query(collection);
 		Object[] l = o.getIds();
 		for (int i = 0; i < o.getIds().length; i++) {
@@ -50,14 +50,14 @@ public class AppEngineKVSTable implements KVSTable{
 			else
 				queryToFilter(q, key, value);
 		}
-		return new AppEngineKVSCursor(db, q, p);
+		return new AppEngineDatastoreCursor(db, q, p);
 	}
 	
-	public KVSCursor find(Scriptable o, Scriptable p, Number skip){
+	public DatabaseCursor find(Scriptable o, Scriptable p, Number skip){
 		return find(o, p).skip(skip);
 	}
 	
-	public KVSCursor find(Scriptable o, Scriptable p, Number skip, Number limit){
+	public DatabaseCursor find(Scriptable o, Scriptable p, Number skip, Number limit){
 		return find(o, p).skip(skip).limit(limit);
 	}
 	
@@ -87,7 +87,7 @@ public class AppEngineKVSTable implements KVSTable{
 
 	@Override
 	public void remove(Scriptable o) {
-		AppEngineKVSCursor c = (AppEngineKVSCursor)find(o);
+		AppEngineDatastoreCursor c = (AppEngineDatastoreCursor)find(o);
 		List<Key> keylist = new ArrayList<Key>();
 		while(c.hasNext()) {
 			Entity e = c.nextRaw();

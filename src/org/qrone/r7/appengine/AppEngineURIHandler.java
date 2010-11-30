@@ -2,6 +2,8 @@ package org.qrone.r7.appengine;
 
 import javax.servlet.ServletContext;
 
+import org.qrone.kvs.KeyValueStoreService;
+import org.qrone.login.CookieHandler;
 import org.qrone.png.PNGMemoryImageService;
 import org.qrone.r7.Extendable;
 import org.qrone.r7.ExtensionIndex;
@@ -20,7 +22,8 @@ import org.qrone.r7.tag.ImageHandler;
 import org.qrone.r7.tag.Scale9Handler;
  
 public class AppEngineURIHandler extends ExtendableURIHandler{
-	
+	private KeyValueStoreService kvs = new AppEngineKVSService();
+	private CookieHandler cookie = new CookieHandler(kvs);
 	private URLFetcher fetcher = new AppEngineURLFetcher();
 	private URIResolver cache  = new AppEngineResolver();
 	private GitHubResolver github = new GitHubResolver(fetcher, cache, 
@@ -38,16 +41,18 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 				new PortingServiceBase(
 						fetcher, 
 						resolver, 
-						new AppEngineKVSService(), 
+						new AppEngineDatastoreService(), 
 						new AppEngineMemcachedService(), 
 						new AppEngineLoginService(), 
 						new PNGMemoryImageService(),
-						repository
+						repository,
+						cookie
 				));
 		
 		rawextend(html5handler);
 		rawextend(this);
-
+		
+		handler.add(cookie);
 		handler.add(github);
 		handler.add(new PathFinderHandler(html5handler));
 		handler.add(new ResolverHandler(resolver));

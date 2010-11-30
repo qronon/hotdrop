@@ -1,7 +1,7 @@
 package org.qrone.r7.appengine;
 
 import org.mozilla.javascript.Scriptable;
-import org.qrone.kvs.KVSCursor;
+import org.qrone.database.DatabaseCursor;
 import org.qrone.r7.script.browser.Function;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -12,7 +12,7 @@ import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.datastore.Query.SortDirection;
 
-public class AppEngineKVSCursor implements KVSCursor{
+public class AppEngineDatastoreCursor implements DatabaseCursor{
 	private DatastoreService db;
 	private int limit = -1;
 	private int current = 0;
@@ -20,7 +20,7 @@ public class AppEngineKVSCursor implements KVSCursor{
 	private QueryResultIterable<Entity> iter;
 	private Scriptable p;
 	
-	public AppEngineKVSCursor(DatastoreService db, Query query, Scriptable p ) {
+	public AppEngineDatastoreCursor(DatastoreService db, Query query, Scriptable p ) {
 		this.db = db;
 		this.query = query;
 		this.p = p;
@@ -56,7 +56,7 @@ public class AppEngineKVSCursor implements KVSCursor{
 	}
 
 	@Override
-	public KVSCursor limit(Number o) {
+	public DatabaseCursor limit(Number o) {
 		limit = o.intValue();
 		return this;
 	}
@@ -75,13 +75,13 @@ public class AppEngineKVSCursor implements KVSCursor{
 	}
 
 	@Override
-	public KVSCursor skip(Number o) {
+	public DatabaseCursor skip(Number o) {
 		current += o.intValue();
 		return this;
 	}
 
 	@Override
-	public KVSCursor sort(Scriptable o) {
+	public DatabaseCursor sort(Scriptable o) {
 		Object[] ids = o.getIds();
 		for (int i = 0; i < ids.length; i++) {
 			if(ids[i] instanceof String){

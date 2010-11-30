@@ -2,7 +2,7 @@ package org.qrone.r7.appengine;
 
 import java.util.Map;
 
-import org.qrone.r7.script.browser.LoginService;
+import org.qrone.login.LoginService;
 import org.qrone.r7.script.browser.User;
 
 import com.google.appengine.api.users.UserService;
