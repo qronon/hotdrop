@@ -4,14 +4,16 @@ import javax.servlet.ServletContext;
 
 import org.qrone.kvs.KeyValueStoreService;
 import org.qrone.login.CookieHandler;
+import org.qrone.login.DoneHandler;
 import org.qrone.png.PNGMemoryImageService;
 import org.qrone.r7.Extendable;
 import org.qrone.r7.ExtensionIndex;
+import org.qrone.r7.PortingService;
 import org.qrone.r7.PortingServiceBase;
 import org.qrone.r7.fetcher.URLFetcher;
 import org.qrone.r7.github.GitHubResolver;
 import org.qrone.r7.handler.ExtendableURIHandler;
-import org.qrone.r7.handler.HTML5Handler;
+import org.qrone.r7.handler.DefaultHandler;
 import org.qrone.r7.handler.PathFinderHandler;
 import org.qrone.r7.handler.ResolverHandler;
 import org.qrone.r7.resolver.URIResolver;
@@ -31,31 +33,29 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	private AppEngineRepositoryService repository = new AppEngineRepositoryService(fetcher, cache);
 	
 	public AppEngineURIHandler(ServletContext cx) {
-		//resolver.add(new FilteredResolver("/qrone-server/", new InternalResourceResolver()));
-		//resolver.add(new ServletResolver(cx));
 		
 		resolver.add(github);
 		resolver.add(repository.getResolver());
-
-		HTML5Handler html5handler = new HTML5Handler(
-				new PortingServiceBase(
-						fetcher, 
-						resolver, 
-						new AppEngineDatastoreService(), 
-						new AppEngineMemcachedService(), 
-						new AppEngineLoginService(), 
-						new PNGMemoryImageService(),
-						repository,
-						cookie
-				));
+		PortingService services = new PortingServiceBase(
+				fetcher, 
+				resolver, 
+				new AppEngineDatastoreService(), 
+				new AppEngineMemcachedService(), 
+				new AppEngineLoginService(), 
+				new PNGMemoryImageService(),
+				repository,
+				cookie
+			);
 		
-		rawextend(html5handler);
+		DefaultHandler defaulthandler = new DefaultHandler(services,
+				new DoneHandler(services));
+		
+		rawextend(defaulthandler);
 		rawextend(this);
 		
 		handler.add(cookie);
 		handler.add(github);
-		handler.add(new PathFinderHandler(html5handler));
-		handler.add(new ResolverHandler(resolver));
+		handler.add(defaulthandler);
 	}
 	
 	private void rawextend(Extendable e){
