@@ -1,5 +1,7 @@
 package org.qrone.r7.appengine;
 
+import java.util.Map;
+
 import org.mozilla.javascript.Scriptable;
 import org.qrone.database.DatabaseCursor;
 import org.qrone.r7.script.browser.Function;
@@ -62,7 +64,7 @@ public class AppEngineDatastoreCursor implements DatabaseCursor{
 	}
 
 	@Override
-	public Object next() {
+	public Map next() {
 		return AppEngineUtil.fromEntity(nextRaw(), p);
 	}
 

@@ -6,12 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.mozilla.javascript.Scriptable;
 import org.qrone.database.DatabaseService;
 import org.qrone.r7.RepositoryService;
 import org.qrone.r7.fetcher.URLFetcher;
 import org.qrone.r7.github.GitHubResolver;
 import org.qrone.r7.resolver.CascadeResolver;
 import org.qrone.r7.resolver.URIResolver;
+import org.qrone.r7.script.Scriptables;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
@@ -52,7 +54,8 @@ public class AppEngineRepositoryService implements RepositoryService{
 	}
 	
 	@Override
-	public String add(String path, Map<String, String> repo) {
+	public String add(Scriptable s) {
+		Map repo = Scriptables.asMap(s);
 		Entity e = new Entity(KIND);
 		for (Iterator<String> i = repo.keySet().iterator(); i
 				.hasNext();) {

@@ -37,8 +37,11 @@ public class AppEngineKVSService implements KeyValueStoreService{
 			if(data != null)
 				return data;
 			try {
-				data = ((Blob)(db.get(KeyFactory.createKey(collection, key)).getProperty("value"))).getBytes();
-				mem.put(key, data);
+				Entity e = db.get(KeyFactory.createKey(collection, key));
+				Blob b = (Blob)e.getProperty("value");
+				if(b == null)
+					return null;
+				mem.put(key, b.getBytes());
 				return data;
 			} catch (EntityNotFoundException e) {
 				return null;
@@ -55,7 +58,7 @@ public class AppEngineKVSService implements KeyValueStoreService{
 			mem.put(key, value);
 			if(!weak){
 				Entity e = new Entity(collection, key);
-				e.setProperty(key, new Blob(value));
+				e.setProperty("value", new Blob(value));
 				db.put(e);
 			}
 		}

@@ -4,7 +4,6 @@ import javax.servlet.ServletContext;
 
 import org.qrone.kvs.KeyValueStoreService;
 import org.qrone.login.CookieHandler;
-import org.qrone.login.DoneHandler;
 import org.qrone.png.PNGMemoryImageService;
 import org.qrone.r7.Extendable;
 import org.qrone.r7.ExtensionIndex;
@@ -22,6 +21,7 @@ import org.qrone.r7.script.ext.ListWrapper;
 import org.qrone.r7.script.ext.MapWrapper;
 import org.qrone.r7.tag.ImageHandler;
 import org.qrone.r7.tag.Scale9Handler;
+import org.qrone.r7.tag.SecurityTicketHandler;
  
 public class AppEngineURIHandler extends ExtendableURIHandler{
 	private KeyValueStoreService kvs = new AppEngineKVSService();
@@ -47,8 +47,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 				cookie
 			);
 		
-		DefaultHandler defaulthandler = new DefaultHandler(services,
-				new DoneHandler(services));
+		DefaultHandler defaulthandler = new DefaultHandler(services);
 		
 		rawextend(defaulthandler);
 		rawextend(this);
@@ -64,6 +63,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 		e.addExtension(MapWrapper.class);
 		e.addExtension(ImageHandler.class);
 		e.addExtension(Scale9Handler.class);
+		e.addExtension(SecurityTicketHandler.class);
 	}
 	
 }
