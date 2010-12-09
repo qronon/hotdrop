@@ -54,6 +54,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 		
 		handler.add(cookie);
 		handler.add(github);
+		handler.add(repository);
 		handler.add(defaulthandler);
 	}
 	

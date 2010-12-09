@@ -6,11 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.mozilla.javascript.Scriptable;
 import org.qrone.database.DatabaseService;
 import org.qrone.r7.RepositoryService;
 import org.qrone.r7.fetcher.URLFetcher;
 import org.qrone.r7.github.GitHubResolver;
+import org.qrone.r7.handler.URIHandler;
 import org.qrone.r7.resolver.CascadeResolver;
 import org.qrone.r7.resolver.URIResolver;
 import org.qrone.r7.script.Scriptables;
@@ -22,7 +26,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 
-public class AppEngineRepositoryService implements RepositoryService{
+public class AppEngineRepositoryService implements URIHandler, RepositoryService{
 	private DatastoreService service = DatastoreServiceFactory.getDatastoreService();
 	private CascadeResolver cascade = new CascadeResolver();
 	
@@ -36,6 +40,9 @@ public class AppEngineRepositoryService implements RepositoryService{
 	private URIResolver cacher;
 	
 	public AppEngineRepositoryService(URLFetcher fetcher, URIResolver cacher){
+		this.fetcher = fetcher;
+		this.cacher = cacher;
+		
 		Query query = new Query(KIND);
 		PreparedQuery pq = service.prepare(query);
 		for( Entity e : pq.asIterable()){
@@ -43,10 +50,14 @@ public class AppEngineRepositoryService implements RepositoryService{
 		}
 	}
 	
-	private void addGithub(Entity e){
+	private boolean addGithub(Entity e){
 		GitHubResolver github = new GitHubResolver(fetcher, cacher, 
 				(String)e.getProperty(NAME), (String)e.getProperty(REPO), (String)e.getProperty(TAG));
-		cascade.add(github);
+		if(github.exist()){
+			cascade.add(github);
+			return true;
+		}
+		return true;
 	}
 	
 	public URIResolver getResolver(){
@@ -66,8 +77,10 @@ public class AppEngineRepositoryService implements RepositoryService{
 		String id = KeyFactory.keyToString(service.put(e));
 		
 		e.setProperty(ID, id);
-		addGithub(e);
-		return id;
+		if(addGithub(e)){
+			return id;
+		}
+		return null;
 	}
 
 	@Override
@@ -89,6 +102,17 @@ public class AppEngineRepositoryService implements RepositoryService{
 		}
 		
 		return list;
+	}
+
+	@Override
+	public boolean handle(HttpServletRequest request,
+			HttpServletResponse response, String uri, String requestPath,
+			String requestPathArg) {
+		List l = cascade.asList();
+		for (Object o : l) {
+			((URIHandler)o).handle(request, response, uri, requestPath, requestPathArg);
+		}
+		return false;
 	}
 	
 
