@@ -9,7 +9,7 @@ import org.qrone.r7.Extendable;
 import org.qrone.r7.ExtensionIndex;
 import org.qrone.r7.PortingService;
 import org.qrone.r7.PortingServiceBase;
-import org.qrone.r7.fetcher.URLFetcher;
+import org.qrone.r7.fetcher.HTTPFetcher;
 import org.qrone.r7.github.GitHubResolver;
 import org.qrone.r7.handler.ExtendableURIHandler;
 import org.qrone.r7.handler.DefaultHandler;
@@ -26,7 +26,7 @@ import org.qrone.r7.tag.SecurityTicketHandler;
 public class AppEngineURIHandler extends ExtendableURIHandler{
 	private KeyValueStoreService kvs = new AppEngineKVSService();
 	private CookieHandler cookie = new CookieHandler(kvs);
-	private URLFetcher fetcher = new AppEngineURLFetcher();
+	private HTTPFetcher fetcher = new AppEngineHTTPFetcher();
 	private URIResolver cache  = new AppEngineResolver();
 	private GitHubResolver github = new GitHubResolver(fetcher, cache, 
 			"qronon","qrone-admintool","master");

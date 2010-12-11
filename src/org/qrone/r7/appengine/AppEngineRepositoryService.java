@@ -9,10 +9,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.ho.yaml.Yaml;
 import org.mozilla.javascript.Scriptable;
 import org.qrone.database.DatabaseService;
 import org.qrone.r7.RepositoryService;
-import org.qrone.r7.fetcher.URLFetcher;
+import org.qrone.r7.fetcher.HTTPFetcher;
 import org.qrone.r7.github.GitHubResolver;
 import org.qrone.r7.handler.URIHandler;
 import org.qrone.r7.resolver.CascadeResolver;
@@ -32,14 +33,14 @@ public class AppEngineRepositoryService implements URIHandler, RepositoryService
 	
 	private static final String KIND = "qrone.repository";
 	private static final String ID = "id";
+	private static final String OWNER = "owner";
 	private static final String NAME = "name";
-	private static final String REPO = "repo";
-	private static final String TAG = "tag";
+	private static final String TREE_SHA = "tree_sha";
 	
-	private URLFetcher fetcher;
+	private HTTPFetcher fetcher;
 	private URIResolver cacher;
 	
-	public AppEngineRepositoryService(URLFetcher fetcher, URIResolver cacher){
+	public AppEngineRepositoryService(HTTPFetcher fetcher, URIResolver cacher){
 		this.fetcher = fetcher;
 		this.cacher = cacher;
 		
@@ -52,7 +53,7 @@ public class AppEngineRepositoryService implements URIHandler, RepositoryService
 	
 	private boolean addGithub(Entity e){
 		GitHubResolver github = new GitHubResolver(fetcher, cacher, 
-				(String)e.getProperty(NAME), (String)e.getProperty(REPO), (String)e.getProperty(TAG));
+				(String)e.getProperty(OWNER), (String)e.getProperty(NAME), (String)e.getProperty(TREE_SHA));
 		if(github.exist()){
 			cascade.add(github);
 			return true;
@@ -67,19 +68,33 @@ public class AppEngineRepositoryService implements URIHandler, RepositoryService
 	@Override
 	public String add(Scriptable s) {
 		Map repo = Scriptables.asMap(s);
-		Entity e = new Entity(KIND);
-		for (Iterator<String> i = repo.keySet().iterator(); i
-				.hasNext();) {
-			String key = i.next();
-			e.setProperty(key, repo.get(key));
-		}
-		
-		String id = KeyFactory.keyToString(service.put(e));
-		
-		e.setProperty(ID, id);
-		if(addGithub(e)){
-			return id;
-		}
+		/*
+		try {
+			String owner = repo.get(OWNER).toString();
+			String name = repo.get(NAME).toString();
+			String tree_sha = repo.get(TREE_SHA).toString();
+			
+			Map map = (Map)Yaml.load(fetcher.fetch("http://github.com/api/v2/yaml/repos/show" 
+					+ owner + "/" + name + "/" + tree_sha));
+			Map repository = (Map)map.get("repository");
+			*/
+
+			Entity e = new Entity(KIND);
+			for (Iterator<String> i = repo.keySet().iterator(); i
+					.hasNext();) {
+				String key = i.next();
+				e.setProperty(key, repo.get(key).toString());
+			}
+			
+			String id = KeyFactory.keyToString(service.put(e));
+			
+			e.setProperty(ID, id);
+			if(addGithub(e)){
+				return id;
+			}
+			/*
+		} catch (Exception e) {}
+			 */
 		return null;
 	}
 
