@@ -15,6 +15,8 @@ import org.qrone.r7.handler.ExtendableURIHandler;
 import org.qrone.r7.handler.DefaultHandler;
 import org.qrone.r7.handler.PathFinderHandler;
 import org.qrone.r7.handler.ResolverHandler;
+import org.qrone.r7.resolver.FilteredResolver;
+import org.qrone.r7.resolver.InternalResourceResolver;
 import org.qrone.r7.resolver.URIResolver;
 import org.qrone.r7.script.ext.ClassPrototype;
 import org.qrone.r7.script.ext.ListWrapper;
@@ -36,6 +38,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 		
 		resolver.add(github);
 		resolver.add(repository.getResolver());
+		resolver.add(new FilteredResolver("/system/resource/", new InternalResourceResolver(cx)));
 		PortingService services = new PortingServiceBase(
 				fetcher, 
 				resolver, 
