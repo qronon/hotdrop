@@ -7,5 +7,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JYaml"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/qrone"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Rhino"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/OpenIDMin"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

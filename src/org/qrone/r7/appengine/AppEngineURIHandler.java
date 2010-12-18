@@ -63,7 +63,6 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	
 	private void rawextend(Extendable e){
 		e.addExtension(ClassPrototype.class);
-		e.addExtension(ListWrapper.class);
 		e.addExtension(MapWrapper.class);
 		e.addExtension(ImageHandler.class);
 		e.addExtension(Scale9Handler.class);
