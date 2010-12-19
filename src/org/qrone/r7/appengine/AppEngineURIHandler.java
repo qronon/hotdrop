@@ -17,6 +17,7 @@ import org.qrone.r7.handler.PathFinderHandler;
 import org.qrone.r7.handler.ResolverHandler;
 import org.qrone.r7.resolver.FilteredResolver;
 import org.qrone.r7.resolver.InternalResourceResolver;
+import org.qrone.r7.resolver.SHAResolver;
 import org.qrone.r7.resolver.URIResolver;
 import org.qrone.r7.script.ext.ClassPrototype;
 import org.qrone.r7.script.ext.ListWrapper;
@@ -29,7 +30,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	private KeyValueStoreService kvs = new AppEngineKVSService();
 	private CookieHandler cookie = new CookieHandler(kvs);
 	private HTTPFetcher fetcher = new AppEngineHTTPFetcher();
-	private URIResolver cache  = new AppEngineResolver();
+	private SHAResolver cache  = new AppEngineResolver();
 	private GitHubResolver github = new GitHubResolver(fetcher, cache, 
 			"qronon","qrone-admintool","master");
 	private AppEngineRepositoryService repository = new AppEngineRepositoryService(fetcher, cache);

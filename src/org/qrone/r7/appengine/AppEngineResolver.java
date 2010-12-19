@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.qrone.r7.resolver.URIResolver;
+import org.qrone.r7.resolver.SHAResolver;
 
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.DatastoreService;
@@ -19,13 +20,14 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.KeyFactory;
 
-public class AppEngineResolver implements URIResolver{
+public class AppEngineResolver implements SHAResolver{
 	private static final String KIND = "qrone.filesystem";
 	private static final String DATA = "data";
+	private static final String SHA = "sha";
 	
 	private DatastoreService service;
 	private Map<String, Entity> weakmap = new WeakHashMap<String, Entity>();
-	private Map<String, Object> noneset = new HashMap<String, Object>();
+	private Map<String, Object> shaset = new HashMap<String, Object>();
 	
 	public AppEngineResolver() {
 		service = DatastoreServiceFactory.getDatastoreService();
@@ -38,10 +40,10 @@ public class AppEngineResolver implements URIResolver{
 		try {
 			e = service.get(KeyFactory.createKey(KIND, path));
 			weakmap.put(path, e);
-			noneset.put(path, Boolean.TRUE);
+			shaset.put(path, e.getProperty(SHA));
 			return e;
 		} catch (EntityNotFoundException ex) {
-			noneset.put(path, Boolean.FALSE);
+			shaset.put(path, Boolean.FALSE);
 		}
 		
 		return null;
@@ -49,8 +51,8 @@ public class AppEngineResolver implements URIResolver{
 
 	@Override
 	public boolean exist(String path) {
-		if(noneset.containsKey(path)){
-			if(noneset.get(path).equals(Boolean.FALSE))
+		if(shaset.containsKey(path)){
+			if(shaset.get(path).equals(Boolean.FALSE))
 				return false;
 			else
 				return true;
@@ -60,30 +62,25 @@ public class AppEngineResolver implements URIResolver{
 
 	@Override
 	public boolean updated(URI uri) {
-		String path = uri.toString();
-		return noneset.get(path) == null;
+		return updated(uri, null);
 	}
 
 	@Override
 	public InputStream getInputStream(URI uri) throws IOException {
-		Entity e = get(uri.toString());
-		if(e != null){
-			Blob b = (Blob)e.getProperty(DATA);
-			return new ByteArrayInputStream(b.getBytes());
-		}
-		return null;
+		return getInputStream(uri, null);
 	}
 
 	@Override
 	public OutputStream getOutputStream(URI uri) throws IOException {
-		String path = uri.toString();
-		return new AppEngineOutputStream(path);
+		return getOutputStream(uri, null);
 	}
 	
 	private class AppEngineOutputStream extends ByteArrayOutputStream{
 		private String path;
-		public AppEngineOutputStream(String path) {
+		private String sha;
+		public AppEngineOutputStream(String path, String sha) {
 			this.path = path;
+			this.sha = sha;
 		}
 		
 		@Override
@@ -91,6 +88,7 @@ public class AppEngineResolver implements URIResolver{
 			super.close();
 			Entity e = new Entity(KeyFactory.createKey(KIND, path));
 			e.setProperty(DATA, new Blob(toByteArray()));
+			e.setProperty(SHA, sha);
 			service.put(e);
 		}
 	}
@@ -99,9 +97,34 @@ public class AppEngineResolver implements URIResolver{
 	public boolean remove(URI uri) {
 		String path = uri.toString();
 		weakmap.remove(path);
-		noneset.remove(path);
+		shaset.remove(path);
 		service.delete(KeyFactory.createKey(KIND, path));
 		return true;
+	}
+
+	@Override
+	public boolean updated(URI uri, String sha) {
+		String path = uri.toString();
+		Object s = shaset.get(path);
+		return s == null || !s.equals(sha);
+	}
+
+	@Override
+	public InputStream getInputStream(URI uri, String sha) throws IOException {
+		Entity e = get(uri.toString());
+		if(e != null){
+			if(sha == null || sha.equals(e.getProperty(SHA))){
+				Blob b = (Blob)e.getProperty(DATA);
+				return new ByteArrayInputStream(b.getBytes());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public OutputStream getOutputStream(URI uri, String sha) throws IOException {
+		String path = uri.toString();
+		return new AppEngineOutputStream(path, sha);
 	}
 
 }
