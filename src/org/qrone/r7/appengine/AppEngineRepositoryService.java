@@ -2,6 +2,7 @@ package org.qrone.r7.appengine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 
 public class AppEngineRepositoryService implements URIHandler, RepositoryService{
-	private Map<String, GitHubResolver> idToResolverMap;
+	private Map<String, GitHubResolver> idToResolverMap = new Hashtable<String, GitHubResolver>();
 	private DatastoreService service = DatastoreServiceFactory.getDatastoreService();
 	private CascadeResolver cascade = new CascadeResolver();
 	

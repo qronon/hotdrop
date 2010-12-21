@@ -52,7 +52,7 @@ public class AppEngineResolver implements SHAResolver{
 	@Override
 	public boolean exist(String path) {
 		if(shaset.containsKey(path)){
-			if(shaset.get(path).equals(Boolean.FALSE))
+			if(Boolean.FALSE.equals(shaset.get(path)))
 				return false;
 			else
 				return true;

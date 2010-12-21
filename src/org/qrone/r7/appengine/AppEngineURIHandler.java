@@ -20,8 +20,8 @@ import org.qrone.r7.resolver.InternalResourceResolver;
 import org.qrone.r7.resolver.SHAResolver;
 import org.qrone.r7.resolver.URIResolver;
 import org.qrone.r7.script.ext.ClassPrototype;
-import org.qrone.r7.script.ext.ListWrapper;
-import org.qrone.r7.script.ext.MapWrapper;
+import org.qrone.r7.script.ext.ScriptableList;
+import org.qrone.r7.script.ext.ScriptableMap;
 import org.qrone.r7.tag.ImageHandler;
 import org.qrone.r7.tag.Scale9Handler;
 import org.qrone.r7.tag.SecurityTicketHandler;
@@ -40,6 +40,7 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 		resolver.add(github);
 		resolver.add(repository.getResolver());
 		resolver.add(new FilteredResolver("/system/resource/", new InternalResourceResolver(cx)));
+		resolver.add(cache);
 		PortingService services = new PortingServiceBase(
 				fetcher, 
 				resolver, 
@@ -64,7 +65,9 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	
 	private void rawextend(Extendable e){
 		e.addExtension(ClassPrototype.class);
-		e.addExtension(MapWrapper.class);
+		e.addExtension(ScriptableMap.class);
+		e.addExtension(ScriptableList.class);
+		e.addExtension(ClassPrototype.class);
 		e.addExtension(ImageHandler.class);
 		e.addExtension(Scale9Handler.class);
 		e.addExtension(SecurityTicketHandler.class);
