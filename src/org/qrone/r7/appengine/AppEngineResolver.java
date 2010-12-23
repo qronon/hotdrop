@@ -90,6 +90,7 @@ public class AppEngineResolver implements SHAResolver{
 			e.setProperty(DATA, new Blob(toByteArray()));
 			e.setProperty(SHA, sha);
 			service.put(e);
+			shaset.put(path, sha);
 		}
 	}
 

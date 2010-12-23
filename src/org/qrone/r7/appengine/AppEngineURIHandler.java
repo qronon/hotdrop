@@ -2,6 +2,7 @@ package org.qrone.r7.appengine;
 
 import javax.servlet.ServletContext;
 
+import org.qrone.img.ImageSpriteService;
 import org.qrone.kvs.KeyValueStoreService;
 import org.qrone.login.CookieHandler;
 import org.qrone.png.PNGMemoryImageService;
@@ -36,18 +37,23 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	private AppEngineRepositoryService repository = new AppEngineRepositoryService(fetcher, cache);
 	
 	public AppEngineURIHandler(ServletContext cx) {
+		PNGMemoryImageService imagebufferservice = new PNGMemoryImageService();
+		ImageSpriteService imagespriteservice = new ImageSpriteService(resolver, cache, imagebufferservice);
 		
+		resolver.add(imagespriteservice);
 		resolver.add(github);
 		resolver.add(repository.getResolver());
 		resolver.add(new FilteredResolver("/system/resource/", new InternalResourceResolver(cx)));
 		resolver.add(cache);
+		
 		PortingService services = new PortingServiceBase(
 				fetcher, 
 				resolver, 
 				new AppEngineDatastoreService(), 
 				new AppEngineMemcachedService(), 
 				new AppEngineLoginService(), 
-				new PNGMemoryImageService(),
+				imagebufferservice,
+				imagespriteservice,
 				repository,
 				cookie
 			);
