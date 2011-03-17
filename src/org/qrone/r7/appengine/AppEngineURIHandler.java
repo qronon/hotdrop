@@ -2,6 +2,7 @@ package org.qrone.r7.appengine;
 
 import javax.servlet.ServletContext;
 
+import org.qrone.database.DatabaseService;
 import org.qrone.img.ImageSpriteService;
 import org.qrone.kvs.KeyValueStoreService;
 import org.qrone.login.CookieHandler;
@@ -10,7 +11,9 @@ import org.qrone.r7.Extendable;
 import org.qrone.r7.ExtensionIndex;
 import org.qrone.r7.PortingService;
 import org.qrone.r7.PortingServiceBase;
+import org.qrone.r7.TaskManagerService;
 import org.qrone.r7.fetcher.HTTPFetcher;
+import org.qrone.r7.github.GitHubRepositoryService;
 import org.qrone.r7.github.GitHubResolver;
 import org.qrone.r7.handler.ExtendableURIHandler;
 import org.qrone.r7.handler.DefaultHandler;
@@ -32,9 +35,10 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 	private CookieHandler cookie = new CookieHandler(kvs);
 	private HTTPFetcher fetcher = new AppEngineHTTPFetcher();
 	private SHAResolver cache  = new AppEngineResolver();
+	private DatabaseService db = new AppEngineDatastoreService();
 	private GitHubResolver github = new GitHubResolver(fetcher, cache, 
 			"qronon","qrone-admintool","master");
-	private AppEngineRepositoryService repository = new AppEngineRepositoryService(fetcher, cache);
+	private GitHubRepositoryService repository = new GitHubRepositoryService(fetcher, cache, db);
 	
 	public AppEngineURIHandler(ServletContext cx) {
 		PNGMemoryImageService imagebufferservice = new PNGMemoryImageService();
@@ -55,7 +59,8 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 				imagebufferservice,
 				imagespriteservice,
 				repository,
-				cookie
+				cookie,
+				null  // TODO TaskManager unimplemented!
 			);
 		
 		DefaultHandler defaulthandler = new DefaultHandler(services);
@@ -67,16 +72,6 @@ public class AppEngineURIHandler extends ExtendableURIHandler{
 		handler.add(github);
 		handler.add(repository);
 		handler.add(defaulthandler);
-	}
-	
-	private void rawextend(Extendable e){
-		e.addExtension(ClassPrototype.class);
-		e.addExtension(ScriptableMap.class);
-		e.addExtension(ScriptableList.class);
-		e.addExtension(ClassPrototype.class);
-		e.addExtension(ImageHandler.class);
-		e.addExtension(Scale9Handler.class);
-		e.addExtension(SecurityTicketHandler.class);
 	}
 	
 }

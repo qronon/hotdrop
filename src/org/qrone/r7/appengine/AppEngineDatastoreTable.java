@@ -1,15 +1,19 @@
 package org.qrone.r7.appengine;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.mozilla.javascript.Scriptable;
 import org.qrone.database.DatabaseCursor;
 import org.qrone.database.DatabaseTable;
+import org.qrone.r7.script.Scriptables;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 
@@ -33,24 +37,7 @@ public class AppEngineDatastoreTable implements DatabaseTable{
 	
 	@Override
 	public DatabaseCursor find(Scriptable o, Scriptable p) {
-		Query q = new Query(collection);
-		Object[] l = o.getIds();
-		for (int i = 0; i < o.getIds().length; i++) {
-			String key = null;
-			Object value = null;
-			if(l[i] instanceof Number){
-				key = ((Number)l[i]).toString();
-				value = o.get(((Number)l[i]).intValue(), o);
-			}else{
-				key = ((String)l[i]);
-				value = o.get(((String)l[i]), o);
-			}
-			if(value instanceof String)
-				queryToFilter(q, key, (String)value);
-			else
-				queryToFilter(q, key, value);
-		}
-		return new AppEngineDatastoreCursor(db, q, p);
+		return find(Scriptables.asMap(o), Scriptables.asMap(p));
 	}
 	
 	public DatabaseCursor find(Scriptable o, Scriptable p, Number skip){
@@ -87,21 +74,9 @@ public class AppEngineDatastoreTable implements DatabaseTable{
 
 	@Override
 	public void remove(Scriptable o) {
-		AppEngineDatastoreCursor c = (AppEngineDatastoreCursor)find(o);
-		List<Key> keylist = new ArrayList<Key>();
-		while(c.hasNext()) {
-			Entity e = c.nextRaw();
-			keylist.add(e.getKey());
-		}
-		db.delete(keylist);
+		remove(Scriptables.asMap(o));
 	}
 	
-
-	@Override
-	public void save(Scriptable o) {
-		db.put(AppEngineUtil.toEntity(collection, o));
-	}
-
 	@Override
 	public void drop() {
 		// TODO Auto-generated method stub
@@ -109,9 +84,70 @@ public class AppEngineDatastoreTable implements DatabaseTable{
 	}
 
 	@Override
-	public void insert(Scriptable o) {
-		// TODO Auto-generated method stub
+	public String insert(Scriptable o) {
+		return save(o);
+	}
+	
+	@Override
+	public String insert(Map o) {
+		return save(o);
+	}
+
+	@Override
+	public String save(Scriptable o) {
+		return KeyFactory.keyToString(db.put(AppEngineUtil.toEntity(collection, o)));
+	}
+
+	@Override
+	public String save(Map o) {
+		return KeyFactory.keyToString(db.put(AppEngineUtil.toEntity(collection, o)));
+	}
+
+	@Override
+	public DatabaseCursor find(Map o) {
+		return find(o, null);
+	}
+
+	@Override
+	public DatabaseCursor find(Map o, Map p) {
+		Query q = new Query(collection);
+		for (Iterator iterator = o.keySet().iterator(); iterator.hasNext();) {
+			Object key = iterator.next();
+			
+			Object value = o.get(key);
+			if(value instanceof String)
+				queryToFilter(q, key.toString(), (String)value);
+			else
+				queryToFilter(q, key.toString(), value);
+		}
+		return new AppEngineDatastoreCursor(db, q, p);
+	}
+
+	@Override
+	public DatabaseCursor find(Map o, Map p, Number skip) {
+		return find(o, p).skip(skip);
+	}
+
+	@Override
+	public DatabaseCursor find(Map o, Map p, Number skip, Number limit) {
+		return find(o, p).skip(skip).limit(limit);
+	}
+
+	@Override
+	public void remove(Map o) {
+		AppEngineDatastoreCursor c = (AppEngineDatastoreCursor)find(o);
+		List<Key> keylist = new ArrayList<Key>();
+		while(c.hasNext()) {
+			Entity e = c.nextRaw();
+			keylist.add(e.getKey());
+		}
+		db.delete(keylist);
 		
+	}
+
+	@Override
+	public void remove(String id) {
+		db.delete(KeyFactory.stringToKey(id));
 	}
 	
 	

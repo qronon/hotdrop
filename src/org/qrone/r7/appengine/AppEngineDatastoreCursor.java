@@ -1,9 +1,11 @@
 package org.qrone.r7.appengine;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.mozilla.javascript.Scriptable;
 import org.qrone.database.DatabaseCursor;
+import org.qrone.r7.script.Scriptables;
 import org.qrone.r7.script.browser.Function;
 
 import com.google.appengine.api.datastore.DatastoreService;
@@ -20,12 +22,12 @@ public class AppEngineDatastoreCursor implements DatabaseCursor{
 	private int current = 0;
 	private Query query;
 	private QueryResultIterable<Entity> iter;
-	private Scriptable p;
+	private Map map;
 	
-	public AppEngineDatastoreCursor(DatastoreService db, Query query, Scriptable p ) {
+	public AppEngineDatastoreCursor(DatastoreService db, Query query, Map map ) {
 		this.db = db;
 		this.query = query;
-		this.p = p;
+		this.map = map;
 	}
 	
 	private QueryResultIterator<Entity> iterator(){
@@ -65,7 +67,7 @@ public class AppEngineDatastoreCursor implements DatabaseCursor{
 
 	@Override
 	public Map next() {
-		return AppEngineUtil.fromEntity(nextRaw(), p);
+		return AppEngineUtil.fromEntity(nextRaw(), map);
 	}
 
 	public Entity nextRaw() {
@@ -84,18 +86,23 @@ public class AppEngineDatastoreCursor implements DatabaseCursor{
 
 	@Override
 	public DatabaseCursor sort(Scriptable o) {
-		Object[] ids = o.getIds();
-		for (int i = 0; i < ids.length; i++) {
-			if(ids[i] instanceof String){
-				Object obj = o.get((String)ids[i], o);
+		return sort(Scriptables.asMap(o));
+	}
+
+	@Override
+	public DatabaseCursor sort(Map o) {
+		for (Iterator iter = o.keySet().iterator(); iter.hasNext();) {
+			Object key = iter.next();
+			if(key instanceof String){
+				Object obj = o.get(key);
 				if(obj instanceof Boolean && ((Boolean)obj).booleanValue())
-					query.addSort((String)ids[i], SortDirection.ASCENDING);
+					query.addSort((String)key, SortDirection.ASCENDING);
 				else if(obj instanceof Number && ((Number)obj).intValue() > 0)
-					query.addSort((String)ids[i], SortDirection.ASCENDING);
+					query.addSort((String)key, SortDirection.ASCENDING);
 				else if(obj == null)
-					query.addSort((String)ids[i], SortDirection.ASCENDING);
+					query.addSort((String)key, SortDirection.ASCENDING);
 				else
-					query.addSort((String)ids[i], SortDirection.DESCENDING);	
+					query.addSort((String)key, SortDirection.DESCENDING);	
 				return this;
 			}
 		}

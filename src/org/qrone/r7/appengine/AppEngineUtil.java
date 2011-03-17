@@ -14,6 +14,7 @@ import org.qrone.r7.script.browser.User;
 
 import com.google.appengine.api.datastore.Blob;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.ShortBlob;
 import com.google.appengine.api.datastore.Text;
 
@@ -23,18 +24,19 @@ public class AppEngineUtil {
 		return fromEntity(e, null);
 	}
 	
-	public static Map<String, Object> fromEntity(Entity e, Scriptable filter){
+	public static Map<String, Object> fromEntity(Entity e, Map filter){
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.putAll(e.getProperties());
 		for (Iterator<Entry<String, Object>> i = map.entrySet().iterator(); i
 				.hasNext();) {
 			Entry<String, Object> item = i.next();
-			if(filter != null && !filter.has(item.getKey(), filter)){
+			if(filter != null && !filter.containsKey(item.getKey())){
 				i.remove();
 			}else{
 				item.setValue(from(item.getValue()));
 			}
 		}
+		map.put("id", KeyFactory.keyToString(e.getKey()));
 		return map;
 	}
 	
@@ -46,17 +48,40 @@ public class AppEngineUtil {
 		}
 		return ds;
 	}
+
+	public static Entity toEntity(String collection, Map o){
+		Entity en = null;
+		if(o.containsKey("id")){
+			en = new Entity(collection, o.get("id").toString());
+		}else{
+			en = new Entity(collection);
+		}
+		
+		for (Iterator<Entry> iterator = o.entrySet().iterator(); iterator.hasNext();) {
+			Entry e = iterator.next();
+			if(!e.getKey().equals("id")){
+				en.setProperty(e.getKey().toString(), to(e.getValue()));
+			}
+		}
+		return en;
+	}
 	
 	public static Entity toEntity(String collection, Scriptable o){
-		Entity e = new Entity(collection);
+		Entity e = null;
+		if(o.has("id", o)){
+			e = new Entity(collection, o.get("id", o).toString());
+		}else{
+			e = new Entity(collection);
+		}
+		
 		Object[] l = o.getIds();
 		for (int i = 0; i < o.getIds().length; i++) {
-			Object obj = null;
-			if(!(l[i] instanceof Number)){
-				obj = o.get(((String)l[i]), o);
+			Object obj = o.get(((String)l[i]), o);
+			if(l[i] instanceof String && !l[i].equals("id")){
 				e.setProperty((String)l[i], to(obj));
+			}else if(l[i] instanceof Number){
+				e.setProperty(String.valueOf(l[i]), to(obj));
 			}
-			
 		}
 		return e;
 	}
