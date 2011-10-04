@@ -8,7 +8,6 @@ import org.qrone.kvs.KeyValueStoreService;
 import org.qrone.login.CookieHandler;
 import org.qrone.png.PNGMemoryImageService;
 import org.qrone.r7.Extendable;
-import org.qrone.r7.ExtensionIndex;
 import org.qrone.r7.PortingService;
 import org.qrone.r7.PortingServiceBase;
 import org.qrone.r7.TaskManagerService;

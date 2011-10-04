@@ -14,6 +14,7 @@ import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 
@@ -79,7 +80,33 @@ public class AppEngineDatastoreTable implements DatabaseTable{
 	
 	@Override
 	public void drop() {
-		// TODO Auto-generated method stub
+		
+		Query q = new Query(collection);
+		PreparedQuery pq = db.prepare(q);
+		final Iterable<Entity> iter = pq.asIterable();
+		
+		db.delete(new Iterable<Key>() {
+			@Override
+			public Iterator<Key> iterator() {
+				final Iterator<Entity> it = iter.iterator();
+				return new Iterator<Key>() {
+					@Override
+					public boolean hasNext() {
+						return it.hasNext();
+					}
+
+					@Override
+					public Key next() {
+						return it.next().getKey();
+					}
+
+					@Override
+					public void remove() {
+						it.remove();
+					}
+				};
+			}
+		});
 		
 	}
 

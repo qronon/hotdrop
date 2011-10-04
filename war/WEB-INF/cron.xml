@@ -5,9 +5,4 @@
     <description>every minutes cron</description>
     <schedule>every 1 minutes</schedule>
   </cron>
-  <cron>
-    <url>/system/cron/hours</url>
-    <description>every hour cron</description>
-    <schedule>every 1 hours</schedule>
-  </cron>
 </cronentries>
