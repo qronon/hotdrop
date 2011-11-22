@@ -23,6 +23,7 @@ public class AppEngineDatastoreTable implements DatabaseTable{
 	private String collection;
 	
 	public AppEngineDatastoreTable(DatastoreService db, String collection) {
+		this.db = db;
 		this.collection = collection;
 	}
 
