@@ -49,7 +49,7 @@ public class AppEngineDatastoreCursor implements DatabaseCursor{
 	@Override
 	public boolean hasNext() {
 		if(limit < 0){
-			return iterator().hasNext();
+			return false;
 		}else{
 			if(limit <= 0){
 				return false;
